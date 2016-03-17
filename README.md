@@ -26,7 +26,7 @@ This will build two JAR files, one containing the Couchbase dependencies and the
 From within the root of your project execute the following, replacing any pathing information with that of your own:
 
 ```
-/path/to/apache/spark/bin/spark-submit --class "com.couchbase.SimpleApp" --packages "com.databricks:spark-csv_2.10:1.4.0" target/simple-project-1.0-jar-with-dependencies.jar
+/path/to/apache/spark/bin/spark-submit --class "com.couchbase.SimpleApp" target/simple-project-1.0-jar-with-dependencies.jar
 ```
 
 If using the [US Baby Names](https://www.kaggle.com/kaggle/us-baby-names) sample, it will take a while as there are 1,825,433 documents being transformed from CSV and inserted into your **default** bucket.

@@ -1,16 +1,10 @@
 package com.couchbase;
 
-import org.apache.spark.api.java.*;
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.sql.*;
-import java.util.*;
-import com.couchbase.client.java.document.json.*;
-import com.couchbase.client.java.document.*;
-import com.couchbase.spark.japi.CouchbaseSparkContext;
-
-import static com.couchbase.spark.japi.CouchbaseDocumentRDD.couchbaseDocumentRDD;
-import static com.couchbase.spark.japi.CouchbaseSparkContext.couchbaseContext;
+import com.couchbase.spark.sql.DataFrameWriterFunctions;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.SQLContext;
+import scala.collection.immutable.Map;
 
 public class Spark {
 
@@ -24,21 +18,18 @@ public class Spark {
 
     public void csvToCouchbase(String csvFilePath) {
         DataFrame df = sqlContext.read()
-            .format("com.databricks.spark.csv")
-            .option("inferSchema", "true")
-            .option("header", "true")
-            .load(csvFilePath);
-        JavaRDD<JsonDocument> documentRdd = df.javaRDD().map(
-            row -> {
-                JsonObject object = JsonObject.create();
-                String[] objectProperties = row.schema().fieldNames();
-                for(int i = 0; i < objectProperties.length; i++) {
-                    object.put(objectProperties[i], row.get(row.fieldIndex(objectProperties[i])));
-                }
-                return JsonDocument.create(object.getInt("Id").toString(), object);
-            }
-        );
-        couchbaseDocumentRDD(documentRdd).saveToCouchbase();
+                .format("com.databricks.spark.csv")
+                .option("inferSchema", "true")
+                .option("header", "true")
+                .load(csvFilePath);
+        // Taking only 0.1% for test
+         df = df.sample(false, 0.001);
+        // Infer the schema uses the integer type for the id but we need a string
+        df = df.withColumn("Id", df.col("Id").cast("string"));
+        DataFrameWriterFunctions dataFrameWriterFunctions = new DataFrameWriterFunctions(df.write());
+        // this option ensure the Id field will be used as key
+        Map<String, String> options = new Map.Map1<String, String>("idField", "Id");
+        dataFrameWriterFunctions.couchbase(options);
     }
 
 }

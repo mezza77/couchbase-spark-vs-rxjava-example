@@ -27,17 +27,17 @@ public class RxJava {
         Observable
             .from(this.csvReader)
             .map(
-                row -> {
+                csvRow -> {
                     JsonObject object = JsonObject.create();
                     object
-                        .put("Name", row[1])
-                        .put("Year", row[2])
-                        .put("Gender", row[3])
-                        .put("Count", row[4]);
-                    return JsonDocument.create(row[0], object);
+                        .put("Name", csvRow[1])
+                        .put("Year", csvRow[2])
+                        .put("Gender", csvRow[3])
+                        .put("Count", csvRow[4]);
+                    return JsonDocument.create(csvRow[0], object);
                 }
             )
-            .subscribe(x -> bucket.upsert(x), error -> System.out.println(error));
+            .subscribe(document -> bucket.upsert(document), error -> System.out.println(error));
     }
 
 }

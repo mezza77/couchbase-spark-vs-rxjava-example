@@ -8,6 +8,7 @@ import com.couchbase.client.java.document.*;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.CouchbaseCluster;
+import com.couchbase.client.java.query.*;
 
 public class RxJava {
 
@@ -38,6 +39,21 @@ public class RxJava {
                 }
             )
             .subscribe(document -> bucket.upsert(document), error -> System.out.println(error));
+    }
+
+    public void getPopularNames(String gender, int threshold) {
+        String queryStr = "SELECT Name, Gender, SUM(Count) AS Total FROM `default` WHERE Gender = $1 GROUP BY Name, Gender HAVING SUM(Count) >= $2";
+        JsonArray parameters = JsonArray.create()
+            .add(gender)
+            .add(threshold);
+        ParameterizedN1qlQuery query = ParameterizedN1qlQuery.parameterized(queryStr, parameters);
+        this.bucket
+            .query(query)
+            .forEach(System.out::println);
+    }
+
+    public void getUnPopularNames(String gender, int threshold) {
+
     }
 
 }

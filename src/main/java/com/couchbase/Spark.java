@@ -30,8 +30,6 @@ public class Spark {
                 .option("inferSchema", "true")
                 .option("header", "true")
                 .load(csvFilePath);
-        // Taking only 0.1% for test
-         df = df.sample(false, 0.01);
         // Infer the schema uses the integer type for the id but we need a string
         df = df.withColumn("Id", df.col("Id").cast("string"));
         DataFrameWriterFunctions dataFrameWriterFunctions = new DataFrameWriterFunctions(df.write());
